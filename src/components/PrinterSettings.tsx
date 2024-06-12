@@ -32,24 +32,32 @@ const PrinterSettings: React.FC<PrinterSettingsProps> = ({
   printRotation,
   setPrintRotation,
 }) => {
-  const [traysLoading, setTraysLoading] = useState(false)
-  const [papersLoading, setPapersLoading] = useState(false)
+  const [traysLoading, setTraysLoading] = useState(false);
+  const [papersLoading, setPapersLoading] = useState(false);
 
   const showSelectedPrinterInfo = () => {
-    const selectedPrinterObj = clientPrinters.find(printer => printer.name === selectedPrinter);
+    const selectedPrinterObj = clientPrinters.find(
+      (printer) => printer.name === selectedPrinter,
+    );
     if (selectedPrinterObj) {
       // setSelectedPrinterTrays(selectedPrinterObj.trays);
-      setSelectedTray(selectedPrinterObj.trays.length > 0 ? selectedPrinterObj.trays[0] : "");
-      setTraysLoading(false)
+      setSelectedTray(
+        selectedPrinterObj.trays.length > 0 ? selectedPrinterObj.trays[0] : '',
+      );
+      setTraysLoading(false);
       // setSelectedPrinterPapers(selectedPrinterObj.papers);
-      setSelectedPaper(selectedPrinterObj.papers.length > 0 ? selectedPrinterObj.papers[0] : "");
-      setPapersLoading(false)
+      setSelectedPaper(
+        selectedPrinterObj.papers.length > 0
+          ? selectedPrinterObj.papers[0]
+          : '',
+      );
+      setPapersLoading(false);
     }
   };
 
   useEffect(() => {
-    setTraysLoading(true)
-    setPapersLoading(true)
+    setTraysLoading(true);
+    setPapersLoading(true);
     showSelectedPrinterInfo();
   }, [selectedPrinter]);
 
@@ -94,38 +102,41 @@ const PrinterSettings: React.FC<PrinterSettingsProps> = ({
       <div>
         <label htmlFor="lstPrinterTrays">Supported Trays:</label>
         {traysLoading && <span>Loading...</span>}
-          {!traysLoading && (
-
-            <select
+        {!traysLoading && (
+          <select
             name="lstPrinterTrays"
             id="lstPrinterTrays"
             value={selectedTray}
             onChange={(e) => setSelectedTray(e.target.value)}
-            >
-          {clientPrinters.find(printer => printer.name === selectedPrinter)?.trays.map((tray, index) => (
-            <option key={index} value={tray}>
-              {tray}
-            </option>
-          ))}
-        </select>
+          >
+            {clientPrinters
+              .find((printer) => printer.name === selectedPrinter)
+              ?.trays.map((tray, index) => (
+                <option key={index} value={tray}>
+                  {tray}
+                </option>
+              ))}
+          </select>
         )}
       </div>
       <div>
         <label htmlFor="lstPrinterPapers">Supported Papers:</label>
         {papersLoading && <span>Loading...</span>}
         {!papersLoading && (
-        <select
-          name="lstPrinterPapers"
-          id="lstPrinterPapers"
-          value={selectedPaper}
-          onChange={(e) => setSelectedPaper(e.target.value)}
-        >
-          {clientPrinters.find(printer => printer.name === selectedPrinter)?.papers.map((paper, index) => (
-            <option key={index} value={paper}>
-              {paper}
-            </option>
-          ))}
-        </select>
+          <select
+            name="lstPrinterPapers"
+            id="lstPrinterPapers"
+            value={selectedPaper}
+            onChange={(e) => setSelectedPaper(e.target.value)}
+          >
+            {clientPrinters
+              .find((printer) => printer.name === selectedPrinter)
+              ?.papers.map((paper, index) => (
+                <option key={index} value={paper}>
+                  {paper}
+                </option>
+              ))}
+          </select>
         )}
       </div>
       <div>

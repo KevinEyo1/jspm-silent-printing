@@ -23,7 +23,9 @@ const PrintControls: React.FC<PrintControlsProps> = ({
     <div>
       <p>The below settings currently only apply to PDFs and not EXCELs.</p>
       <div>
-        <label htmlFor="txtPrintRange">Pages Range (MUST BE IN RANGE): [e.g. 1,2,3,10-15]</label>
+        <label htmlFor="txtPrintRange">
+          Pages Range (MUST BE IN RANGE): [e.g. 1,2,3,10-15]
+        </label>
         <input
           type="text"
           id="txtPrintRange"
@@ -50,7 +52,10 @@ const PrintControls: React.FC<PrintControlsProps> = ({
             checked={printAnnotations}
             onChange={(e) => setPrintAnnotations(e.target.checked)}
           />
-          Print Annotations? <span><em>Windows Only</em></span>
+          Print Annotations?{' '}
+          <span>
+            <em>Windows Only</em>
+          </span>
         </label>
       </div>
       <div>
@@ -61,7 +66,10 @@ const PrintControls: React.FC<PrintControlsProps> = ({
             checked={printAsGrayscale}
             onChange={(e) => setPrintAsGrayscale(e.target.checked)}
           />
-          Print As Grayscale? <span><em>Windows Only</em></span>
+          Print As Grayscale?{' '}
+          <span>
+            <em>Windows Only</em>
+          </span>
         </label>
       </div>
     </div>

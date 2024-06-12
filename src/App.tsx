@@ -1,40 +1,31 @@
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import './App.css'
-import PrinterSetup from './components/PrinterSetup'
-import OtherPage from './components/HomePage';
-import { useEffect, useState } from 'react';
-import * as JSPM from 'jsprintmanager';
-import { jspmWSStatus } from './utils/printerUtils';
-import PrinterSetupCopy from './components/PrinterSetupCopy';
 import { AppBar, Button, Container, CssBaseline, Toolbar, Typography } from '@mui/material';
-
-interface Printer {
-  name: string;
-  trays: string[];
-  papers: string[];
-}
-
-interface SavedSetting {
-  selectedPrinter: string;
-  selectedTray: string;
-  selectedPaper: string;
-  printRotation: string;
-  pagesRange: string;
-  printInReverseOrder: boolean;
-  printAnnotations: boolean;
-  printAsGrayscale: boolean;
-}
+import * as JSPM from 'jsprintmanager';
+import { useEffect, useState } from 'react';
+import { Link, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import './App.css';
+import BlobPage from './components/BlobPage';
+import { IPrinter, IPrinterSettings, SavedSettingsMap } from './components/ComponentTypes';
+import HomePage from './components/HomePage';
+import PrinterSetup from './components/PrinterSetup';
+import UrlPage from './components/UrlPage';
+import { jspmWSStatus } from './utils/printerUtils';
 
 function App() {
-  const [clientPrinters, setClientPrinters] = useState<Printer[]>([]);
-  const [selectedPrinter, setSelectedPrinter] = useState<string>("");
+  const [clientPrinters, setClientPrinters] = useState<IPrinter[]>([]);
+  const [selectedPrinterSettings, setSelectedPrinterSettings] = useState<IPrinterSettings>({
+    printerName: "",
+    trayName: "",
+    paperName: "",
+  });
   const [printersLoading, setPrintersLoading] = useState(true);
-  const [savedSettings, setSavedSettings] = useState<SavedSetting[]>([]);
+  const [savedSettingsMap, setSavedSettingsMap] = useState<SavedSettingsMap>({});
 
   useEffect(() => {
     // Load saved settings from local storage
-    const saved = JSON.parse(localStorage.getItem('printerSettings') || '[]');
-    setSavedSettings(saved);
+    const saved = localStorage.getItem('savedSettings');
+    if (saved) {
+      setSavedSettingsMap(JSON.parse(saved))
+    }
 
     // WebSocket settings
     JSPM.JSPrintManager.auto_reconnect = true;
@@ -43,20 +34,24 @@ function App() {
     JSPM.JSPrintManager.WS!.onStatusChanged = () => {
       if (jspmWSStatus()) {
         // Get client installed printers
-        function isObjectArray(value: unknown): value is Printer[] {
+        function isObjectArray(value: unknown): value is IPrinter[] {
           return Array.isArray(value) && value.every(elem => typeof elem === 'object');
         }
         JSPM.JSPrintManager.getPrintersInfo(JSPM.PrintersInfoLevel.Basic, '', JSPM.PrinterIcon.None).then((printersList) => {
           if (isObjectArray(printersList)) {
             setClientPrinters(printersList);
-            setSelectedPrinter(printersList.length > 0 ? printersList[0].name : "");
+            setSelectedPrinterSettings({
+              printerName: printersList.length > 0 ? printersList[0].name : "",
+              trayName: printersList.length > 0 ? printersList[0].trays[0] : "",
+              paperName: printersList.length > 0 ? printersList[0].papers[0] : "",
+            });
             setPrintersLoading(false);
           }
         });
       }
     };
   }, []);
-  
+
   return (
     <>
     <Router>
@@ -83,20 +78,24 @@ function App() {
           <Button color="inherit" component={Link} to="/">
             Home
           </Button>
-          <Button color="inherit" component={Link} to="/other">
-            Other
+          <Button color="inherit" component={Link} to="/settings">
+            Settings
           </Button>
-          <Button color="inherit" component={Link} to="/extra">
-            Extra
+          <Button color="inherit" component={Link} to="/urlpage">
+            URL Page
+          </Button>
+          <Button color="inherit" component={Link} to="/blobpage">
+            Blob Page
           </Button>
         </Toolbar>
       </AppBar>
       <Toolbar /> {/* This toolbar is a spacer to push content below the AppBar */}
       <Container>
         <Routes>
-          <Route path="/" element={<OtherPage />} />
-          <Route path="/other" element={<PrinterSetup clientPrinters={clientPrinters} selectedPrinter={selectedPrinter} setSelectedPrinter={setSelectedPrinter} printersLoading={printersLoading} savedSettings={savedSettings} setSavedSettings={setSavedSettings} />} />
-          <Route path="/extra" element={<PrinterSetupCopy clientPrinters={clientPrinters} selectedPrinter={selectedPrinter} setSelectedPrinter={setSelectedPrinter} printersLoading={printersLoading} savedSettings={savedSettings} setSavedSettings={setSavedSettings} />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/settings" element={<PrinterSetup clientPrinters={clientPrinters} selectedPrinterSettings={selectedPrinterSettings} setSelectedPrinterSettings={setSelectedPrinterSettings} printersLoading={printersLoading} savedSettingsMap={savedSettingsMap} setSavedSettingsMap={setSavedSettingsMap} />} />
+          <Route path="/urlpage" element={<UrlPage />} />
+          <Route path="/blobpage" element={<BlobPage />} />
         </Routes>
       </Container>
     </Router>                    
