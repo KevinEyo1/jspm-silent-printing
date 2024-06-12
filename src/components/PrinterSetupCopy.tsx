@@ -23,8 +23,9 @@ interface SavedSetting {
   printAsGrayscale: boolean;
 }
 
-const PrinterSetup = (props: any) => { 
+const PrinterSetupCopy = (props: any) => {
   const { clientPrinters, selectedPrinter, setSelectedPrinter, printersLoading, savedSettings, setSavedSettings } = props;
+
   const [fileUrl, setFileUrl] = useState<string>("https://neodynamic.com/temp/LoremIpsum.pdf");
   const [fileSelected, setFileSelected] = useState<File | null>(null);
   const [selectedTray, setSelectedTray] = useState<string>("");
@@ -35,9 +36,6 @@ const PrinterSetup = (props: any) => {
   const [printAnnotations, setPrintAnnotations] = useState(false);
   const [printAsGrayscale, setPrintAsGrayscale] = useState(false);
 
-  
-
-  
 
   const handlePrint = (settings: undefined | SavedSetting) => {
     if (jspmWSStatus()) {
@@ -173,4 +171,4 @@ const PrinterSetup = (props: any) => {
   );
 };
 
-export default PrinterSetup;
+export default PrinterSetupCopy;
