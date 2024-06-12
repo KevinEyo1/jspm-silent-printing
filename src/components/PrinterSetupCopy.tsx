@@ -6,7 +6,7 @@ import { jspmWSStatus, checkFileType, createFile } from '../utils/printerUtils';
 import './PrinterSetup.css';
 import { Settings, IPrinter } from '../components/ComponentTypes';
 
-type PrinterSetupProps = {
+type PrinterSetupCopyProps = {
   clientPrinters: IPrinter[];
   selectedPrinter: string;
   setSelectedPrinter: (printer: string) => void;
@@ -15,14 +15,14 @@ type PrinterSetupProps = {
   setSavedSettings: (settings: Settings[]) => void;
 };
 
-const PrinterSetup = (props: PrinterSetupProps) => {
+const PrinterSetupCopy = (props: PrinterSetupCopyProps) => {
   const { clientPrinters, selectedPrinter, setSelectedPrinter, printersLoading, savedSettings, setSavedSettings } = props;
   const [fileUrl, setFileUrl] = useState<string>("https://neodynamic.com/temp/LoremIpsum.pdf");
   const [fileSelected, setFileSelected] = useState<File | null>(null);
   const [selectedTray, setSelectedTray] = useState<string>("");
   const [selectedPaper, setSelectedPaper] = useState<string>("");
   const [printRotation, setPrintRotation] = useState<string>("None");
-  const [printRange, setPrintRange] = useState<string>("");
+  const [pagesRange, setPagesRange] = useState<string>("");
   const [printInReverseOrder, setPrintInReverseOrder] = useState(false);
   const [printAnnotations, setPrintAnnotations] = useState(false);
   const [printAsGrayscale, setPrintAsGrayscale] = useState(false);
@@ -52,7 +52,7 @@ const PrinterSetup = (props: PrinterSetupProps) => {
       
       if (my_file instanceof JSPM.PrintFilePDF) {
         my_file.printRotation = JSPM.PrintRotation[(saved ? settings.printRotation : printRotation) as keyof typeof JSPM.PrintRotation];
-        my_file.printRange = saved ? settings.printRange : printRange;
+        my_file.printRange = saved ? settings.pagesRange : pagesRange;
         my_file.printAnnotations = saved ? settings.printAnnotations : printAnnotations;
         my_file.printAsGrayscale = saved ? settings.printAsGrayscale : printAsGrayscale;
         my_file.printInReverseOrder = saved ? settings.printInReverseOrder : printInReverseOrder;
@@ -80,7 +80,7 @@ const PrinterSetup = (props: PrinterSetupProps) => {
       selectedTray,
       selectedPaper,
       printRotation,
-      printRange,
+      pagesRange,
       printInReverseOrder,
       printAnnotations,
       printAsGrayscale
@@ -124,8 +124,8 @@ const PrinterSetup = (props: PrinterSetupProps) => {
             setPrintRotation={setPrintRotation}
           />
           <PrintControls
-            printRange={printRange}
-            setPrintRange={setPrintRange}
+            pagesRange={pagesRange}
+            setPagesRange={setPagesRange}
             printInReverseOrder={printInReverseOrder}
             setPrintInReverseOrder={setPrintInReverseOrder}
             printAnnotations={printAnnotations}
@@ -146,7 +146,7 @@ const PrinterSetup = (props: PrinterSetupProps) => {
                 <p><strong>Tray:</strong> {setting.selectedTray}</p>
                 <p><strong>Paper:</strong> {setting.selectedPaper}</p>
                 <p><strong>Print Rotation:</strong> {setting.printRotation}</p>
-                <p><strong>Pages Range:</strong> {setting.printRange}</p>
+                <p><strong>Pages Range:</strong> {setting.pagesRange}</p>
                 <p><strong>Print In Reverse Order:</strong> {setting.printInReverseOrder ? 'Yes' : 'No'}</p>
                 <p><strong>Print Annotations:</strong> {setting.printAnnotations ? 'Yes' : 'No'}</p>
                 <p><strong>Print As Grayscale:</strong> {setting.printAsGrayscale ? 'Yes' : 'No'}</p>
@@ -161,4 +161,4 @@ const PrinterSetup = (props: PrinterSetupProps) => {
   );
 };
 
-export default PrinterSetup;
+export default PrinterSetupCopy;

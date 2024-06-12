@@ -1,5 +1,5 @@
 import * as JSPM from 'jsprintmanager';
-import * as XLSX from 'xlsx';
+import { IExcelSettings, IPDFSettings, IPrinterSettings } from '../components/ComponentTypes';
 
 // checks if JSPM Client App is downloaded and properly setup on client side
 export const jspmWSStatus = () => {
@@ -27,24 +27,66 @@ export const checkFileType = (fileUrl: string) => {
   }
 }
 
-export const createFile = (file: string | Blob, fileType: string) => {
-  if (file instanceof Blob) {
-    switch(fileType) {
-      case 'application/pdf':
-        return new JSPM.PrintFilePDF(file, JSPM.FileSourceType.BLOB, 'apple.pdf', 1);
-      case 'application/vnd.ms-excel':
-      case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-        return new JSPM.PrintFileXLS(file, JSPM.FileSourceType.BLOB, 'apple.xls', 1);
-    }
-  } else if (typeof file === 'string') {
-    switch(fileType) {
-      case 'PDF':
-        return new JSPM.PrintFilePDF(file, JSPM.FileSourceType.URL, 'apple.pdf', 1);
-      case 'XLS':
-        return new JSPM.PrintFileXLS(file, JSPM.FileSourceType.URL, 'apple.xls', 1);
-      default: // fileType unknown
-        // remove 
-        return new JSPM.PrintFilePDF(file, JSPM.FileSourceType.URL, 'apple.pdf', 1);
-    }
+export const createPDFFile = (data: string | Blob, dataSettings: IPDFSettings | undefined) => {
+  const { printAnnotations, printAsGrayscale, printInReverseOrder, printRange, printRotation } = dataSettings as IPDFSettings;
+  var pdfFile = undefined;
+  if (data instanceof Blob) {
+        pdfFile = new JSPM.PrintFilePDF(data, JSPM.FileSourceType.BLOB, 'apple.pdf', 1);
+  } else if (typeof data === 'string') {
+        pdfFile = new JSPM.PrintFilePDF(data, JSPM.FileSourceType.URL, 'apple.pdf', 1);
+  } else {
+    return undefined;
+  }
+  printAnnotations && (pdfFile.printAnnotations = printAnnotations);
+  printAsGrayscale && (pdfFile.printAsGrayscale = printAsGrayscale);
+  printInReverseOrder && (pdfFile.printInReverseOrder = printInReverseOrder);
+  printRange && (pdfFile.printRange = printRange);
+  printRotation && (pdfFile.printRotation = JSPM.PrintRotation[printRotation as keyof typeof JSPM.PrintRotation]);
+  return pdfFile;
+}
+
+export const createExcelFile = (data: string | Blob, dataSettings: IExcelSettings | undefined) => {
+  const { pageFrom, pageTo } = dataSettings as IExcelSettings;
+  var xlsFile = undefined;
+  if (data instanceof Blob) {
+    xlsFile = new JSPM.PrintFileXLS(data, JSPM.FileSourceType.BLOB, 'apple.xls', 1);
+  } else if (typeof data === 'string') {
+    xlsFile = new JSPM.PrintFileXLS(data, JSPM.FileSourceType.URL, 'apple.xls', 1);
+  } else {
+    return undefined;
+  }
+  pageFrom && (xlsFile.pageFrom = pageFrom);
+  pageTo && (xlsFile.pageTo = pageTo);
+  return xlsFile;
+}
+
+const handlePrint = (data: string | Blob, dataFormat: string, printerSettings: IPrinterSettings, dataSettings: IPDFSettings | IExcelSettings | undefined) => {
+  const { printerName, paperName, trayName } = printerSettings;
+  const cpj = new JSPM.ClientPrintJob();
+  const myPrinter = new JSPM.InstalledPrinter(printerName);
+  paperName && (myPrinter.paperName = paperName);
+  trayName && (myPrinter.trayName = trayName);
+  cpj.clientPrinter = myPrinter;
+  
+  var printFile = undefined;
+  switch(dataFormat) {
+    case 'PDF':
+    case 'application/pdf':
+      printFile = createPDFFile(data, dataSettings as IPDFSettings | undefined);
+      break;
+    case 'XLS':
+    case 'application/vnd.ms-excel':
+    case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+      printFile = createExcelFile(data, dataSettings as IExcelSettings | undefined);
+      break;
+    default:
+      alert('Invalid data input');
+  }
+
+  if (typeof printFile !== 'undefined') {
+    cpj.files.push(printFile);
+    cpj.sendToClient();
+  } else {
+    alert('Invalid data input')
   }
 }

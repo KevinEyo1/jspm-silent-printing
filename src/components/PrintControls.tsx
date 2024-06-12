@@ -1,6 +1,6 @@
 interface PrintControlsProps {
-  pagesRange: string;
-  setPagesRange: (value: string) => void;
+  printRange: string;
+  setPrintRange: (value: string) => void;
   printInReverseOrder: boolean;
   setPrintInReverseOrder: (value: boolean) => void;
   printAnnotations: boolean;
@@ -10,8 +10,8 @@ interface PrintControlsProps {
 }
 
 const PrintControls: React.FC<PrintControlsProps> = ({
-  pagesRange,
-  setPagesRange,
+  printRange,
+  setPrintRange,
   printInReverseOrder,
   setPrintInReverseOrder,
   printAnnotations,
@@ -23,12 +23,12 @@ const PrintControls: React.FC<PrintControlsProps> = ({
     <div>
       <p>The below settings currently only apply to PDFs and not EXCELs.</p>
       <div>
-        <label htmlFor="txtPagesRange">Pages Range (MUST BE IN RANGE): [e.g. 1,2,3,10-15]</label>
+        <label htmlFor="txtPrintRange">Pages Range (MUST BE IN RANGE): [e.g. 1,2,3,10-15]</label>
         <input
           type="text"
-          id="txtPagesRange"
-          value={pagesRange}
-          onChange={(e) => setPagesRange(e.target.value)}
+          id="txtPrintRange"
+          value={printRange}
+          onChange={(e) => setPrintRange(e.target.value)}
         />
       </div>
       <div>

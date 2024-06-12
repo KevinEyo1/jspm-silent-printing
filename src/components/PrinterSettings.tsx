@@ -1,13 +1,8 @@
 import { useEffect, useState } from 'react';
-
-interface Printer {
-  name: string;
-  trays: string[];
-  papers: string[];
-}
+import { IPrinter } from './ComponentTypes';
 
 interface PrinterSettingsProps {
-  clientPrinters: Printer[];
+  clientPrinters: IPrinter[];
   fileUrl: string;
   setFileUrl: (url: string) => void;
   fileSelected: File | null;
