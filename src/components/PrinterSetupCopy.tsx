@@ -1,9 +1,14 @@
+<<<<<<< HEAD
 import { useState } from 'react';
+=======
+import React, { useState, useEffect } from 'react';
+>>>>>>> main
 import * as JSPM from 'jsprintmanager';
 import PrinterSettings from './PrinterSettings';
 import PrintControls from './PrintControls';
 import { jspmWSStatus, checkFileType, createFile } from '../utils/printerUtils';
 import './PrinterSetup.css';
+<<<<<<< HEAD
 import { Settings, IPrinter } from '../components/ComponentTypes';
 
 type PrinterSetupCopyProps = {
@@ -17,6 +22,30 @@ type PrinterSetupCopyProps = {
 
 const PrinterSetupCopy = (props: PrinterSetupCopyProps) => {
   const { clientPrinters, selectedPrinter, setSelectedPrinter, printersLoading, savedSettings, setSavedSettings } = props;
+=======
+import { set } from 'firebase/database';
+
+interface Printer {
+  name: string;
+  trays: string[];
+  papers: string[];
+}
+
+interface SavedSetting {
+  selectedPrinter: string;
+  selectedTray: string;
+  selectedPaper: string;
+  printRotation: string;
+  pagesRange: string;
+  printInReverseOrder: boolean;
+  printAnnotations: boolean;
+  printAsGrayscale: boolean;
+}
+
+const PrinterSetupCopy = (props: any) => {
+  const { clientPrinters, selectedPrinter, setSelectedPrinter, printersLoading, savedSettings, setSavedSettings } = props;
+
+>>>>>>> main
   const [fileUrl, setFileUrl] = useState<string>("https://neodynamic.com/temp/LoremIpsum.pdf");
   const [fileSelected, setFileSelected] = useState<File | null>(null);
   const [selectedTray, setSelectedTray] = useState<string>("");
@@ -27,7 +56,12 @@ const PrinterSetupCopy = (props: PrinterSetupCopyProps) => {
   const [printAnnotations, setPrintAnnotations] = useState(false);
   const [printAsGrayscale, setPrintAsGrayscale] = useState(false);
 
+<<<<<<< HEAD
   const handlePrint = (settings: undefined | Settings) => {
+=======
+
+  const handlePrint = (settings: undefined | SavedSetting) => {
+>>>>>>> main
     if (jspmWSStatus()) {
       // Create a ClientPrintJob
       const cpj = new JSPM.ClientPrintJob();
@@ -75,7 +109,11 @@ const PrinterSetupCopy = (props: PrinterSetupCopyProps) => {
   };
 
   const handleSaveSettings = () => {
+<<<<<<< HEAD
     const newSetting: Settings = {
+=======
+    const newSetting: SavedSetting = {
+>>>>>>> main
       selectedPrinter,
       selectedTray,
       selectedPaper,

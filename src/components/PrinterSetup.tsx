@@ -139,7 +139,7 @@ const PrinterSetup = (props: PrinterSetupProps) => {
           <h2>Saved Settings</h2>
           {savedSettings.length === 0 && <p>No saved settings</p>}
           <div className="grid-container">
-            {savedSettings.map((setting, index) => (
+            {savedSettings.map((setting: any, index: any) => (
               <div key={index} className="grid-item">
                 <h3>{`Setting ${index + 1}`}</h3>
                 <p><strong>Printer:</strong> {setting.selectedPrinter}</p>
