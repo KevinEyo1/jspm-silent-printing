@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
-import { IPrinter } from './ComponentTypes';
+import React, { useEffect, useState } from 'react';
+import { Box, CircularProgress, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
+import { IPrinter, IPrinterSettings } from './ComponentTypes';
 
 interface PrinterSettingsProps {
   clientPrinters: IPrinter[];
@@ -7,14 +8,10 @@ interface PrinterSettingsProps {
   setFileUrl: (url: string) => void;
   fileSelected: File | null;
   setFileSelected: (file: File) => void;
-  selectedPrinter: string;
-  setSelectedPrinter: (printer: string) => void;
-  selectedTray: string;
-  setSelectedTray: (tray: string) => void;
-  selectedPaper: string;
-  setSelectedPaper: (paper: string) => void;
-  printRotation: string;
-  setPrintRotation: (rotation: string) => void;
+  selectedPrinterSettings: IPrinterSettings;
+  setSelectedPrinterSettings: (printer: IPrinterSettings) => void;
+  nameToSave: string;
+  setNameToSave: (name: string) => void;
 }
 
 const PrinterSettings: React.FC<PrinterSettingsProps> = ({
@@ -23,137 +20,135 @@ const PrinterSettings: React.FC<PrinterSettingsProps> = ({
   setFileUrl,
   fileSelected,
   setFileSelected,
-  selectedPrinter,
-  setSelectedPrinter,
-  selectedTray,
-  setSelectedTray,
-  selectedPaper,
-  setSelectedPaper,
-  printRotation,
-  setPrintRotation,
+  selectedPrinterSettings,
+  setSelectedPrinterSettings,
+  nameToSave,
+  setNameToSave,
 }) => {
-  const [traysLoading, setTraysLoading] = useState(false);
-  const [papersLoading, setPapersLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const showSelectedPrinterInfo = () => {
     const selectedPrinterObj = clientPrinters.find(
-      (printer) => printer.name === selectedPrinter,
+      (printer) => printer.name === selectedPrinterSettings.printerName,
     );
     if (selectedPrinterObj) {
-      // setSelectedPrinterTrays(selectedPrinterObj.trays);
-      setSelectedTray(
-        selectedPrinterObj.trays.length > 0 ? selectedPrinterObj.trays[0] : '',
-      );
-      setTraysLoading(false);
-      // setSelectedPrinterPapers(selectedPrinterObj.papers);
-      setSelectedPaper(
-        selectedPrinterObj.papers.length > 0
-          ? selectedPrinterObj.papers[0]
-          : '',
-      );
-      setPapersLoading(false);
+      setSelectedPrinterSettings({
+        ...selectedPrinterSettings,
+        trayName: selectedPrinterObj.trays.length > 0 
+        ? selectedPrinterObj.trays[0] : '',
+        paperName: selectedPrinterObj.papers.length > 0
+        ? selectedPrinterObj.papers[0] : '',
+      })
+      setLoading(false);
+    } else {
+      alert("Can't find printer");
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    setTraysLoading(true);
-    setPapersLoading(true);
+    setLoading(true);
     showSelectedPrinterInfo();
-  }, [selectedPrinter]);
+  }, [selectedPrinterSettings.printerName]);
+
+  const handleChange = (e: SelectChangeEvent<string>) => {
+    const name = e.target.name as keyof IPrinterSettings;
+    setSelectedPrinterSettings({
+      ...selectedPrinterSettings,
+      [name]: e.target.value as string,
+    });
+  }
 
   return (
-    <div>
-      <p>Selected file takes precedence over file url</p>
-      <div>
-        <label htmlFor="file">Select File:</label>
+    <Box>
+      <Typography variant="h6">Selected file takes precedence over file URL</Typography>
+      <Box mb={2}>
         <input
           type="file"
-          name="file"
-          id="file"
           accept=".pdf,.xls,.xlsx"
           onChange={(e) => setFileSelected(e.target.files?.[0] as File)}
         />
-      </div>
-      <div>
-        <label htmlFor="txtFile">File URL (.pdf .xls .xlsx) :</label>
-        <input
-          type="text"
-          name="txtFile"
-          id="txtFile"
+      </Box>
+      <Box mb={2}>
+        <TextField
+          label="File URL (.pdf, .xls, .xlsx)"
           value={fileUrl}
           onChange={(e) => setFileUrl(e.target.value)}
+          fullWidth
         />
-      </div>
-      <div>
-        <label htmlFor="lstPrinters">Printers:</label>
-        <select
-          name="lstPrinters"
-          id="lstPrinters"
-          value={selectedPrinter}
-          onChange={(e) => setSelectedPrinter(e.target.value)}
-        >
-          {clientPrinters.map((printer, index) => (
-            <option key={index} value={printer.name}>
-              {printer.name}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label htmlFor="lstPrinterTrays">Supported Trays:</label>
-        {traysLoading && <span>Loading...</span>}
-        {!traysLoading && (
-          <select
-            name="lstPrinterTrays"
-            id="lstPrinterTrays"
-            value={selectedTray}
-            onChange={(e) => setSelectedTray(e.target.value)}
+      </Box>
+      <Box mb={2}>
+        <TextField
+          label="Settings Name"
+          value={nameToSave}
+          onChange={(e) => setNameToSave(e.target.value)}
+          fullWidth
+        />
+      </Box>
+      <Box mb={2}>
+        <FormControl fullWidth>
+          <InputLabel id="printerName-label">Printers</InputLabel>
+          <Select
+            labelId="printerName-label"
+            name="printerName"
+            value={selectedPrinterSettings.printerName}
+            onChange={handleChange}
           >
-            {clientPrinters
-              .find((printer) => printer.name === selectedPrinter)
-              ?.trays.map((tray, index) => (
-                <option key={index} value={tray}>
-                  {tray}
-                </option>
-              ))}
-          </select>
-        )}
-      </div>
-      <div>
-        <label htmlFor="lstPrinterPapers">Supported Papers:</label>
-        {papersLoading && <span>Loading...</span>}
-        {!papersLoading && (
-          <select
-            name="lstPrinterPapers"
-            id="lstPrinterPapers"
-            value={selectedPaper}
-            onChange={(e) => setSelectedPaper(e.target.value)}
-          >
-            {clientPrinters
-              .find((printer) => printer.name === selectedPrinter)
-              ?.papers.map((paper, index) => (
-                <option key={index} value={paper}>
-                  {paper}
-                </option>
-              ))}
-          </select>
-        )}
-      </div>
-      <div>
-        <label htmlFor="lstPrintRotation">Print Rotation (Clockwise):</label>
-        <select
-          name="lstPrintRotation"
-          id="lstPrintRotation"
-          value={printRotation}
-          onChange={(e) => setPrintRotation(e.target.value)}
-        >
-          <option>None</option>
-          <option>Rot90</option>
-          <option>Rot180</option>
-          <option>Rot270</option>
-        </select>
-      </div>
-    </div>
+            {clientPrinters.map((printer, index) => (
+              <MenuItem key={index} value={printer.name}>
+                {printer.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
+      <Box mb={2}>
+        <FormControl fullWidth>
+          <InputLabel id="trayName-label">Supported Trays</InputLabel>
+          {loading ? (
+            <CircularProgress />
+          ) : (
+            <Select
+              labelId="trayName-label"
+              name="trayName"
+              value={selectedPrinterSettings.trayName}
+              onChange={handleChange}
+            >
+              {clientPrinters
+                .find((printer) => printer.name === selectedPrinterSettings.printerName)
+                ?.trays.map((tray, index) => (
+                  <MenuItem key={index} value={tray}>
+                    {tray}
+                  </MenuItem>
+                ))}
+            </Select>
+          )}
+        </FormControl>
+      </Box>
+      <Box mb={2}>
+        <FormControl fullWidth>
+          <InputLabel id="paperName-label">Supported Papers</InputLabel>
+          {loading ? (
+            <CircularProgress />
+          ) : (
+            <Select
+              labelId="paperName-label"
+              name="paperName"
+              value={selectedPrinterSettings.paperName}
+              onChange={handleChange}
+            >
+              {clientPrinters
+                .find((printer) => printer.name === selectedPrinterSettings.printerName)
+                ?.papers.map((paper, index) => (
+                  <MenuItem key={index} value={paper}>
+                    {paper}
+                  </MenuItem>
+                ))}
+            </Select>
+          )}
+        </FormControl>
+      </Box>
+    </Box>
   );
 };
 

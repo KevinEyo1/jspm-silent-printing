@@ -22,7 +22,7 @@ function App() {
 
   useEffect(() => {
     // Load saved settings from local storage
-    const saved = localStorage.getItem('savedSettings');
+    const saved = localStorage.getItem('savedSettingsMap');
     if (saved) {
       setSavedSettingsMap(JSON.parse(saved))
     }
@@ -95,10 +95,10 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/settings" element={<PrinterSetup clientPrinters={clientPrinters} selectedPrinterSettings={selectedPrinterSettings} setSelectedPrinterSettings={setSelectedPrinterSettings} printersLoading={printersLoading} savedSettingsMap={savedSettingsMap} setSavedSettingsMap={setSavedSettingsMap} />} />
           <Route path="/urlpage" element={<UrlPage />} />
-          <Route path="/blobpage" element={<BlobPage />} />
+          <Route path="/blobpage" element={<BlobPage printersLoading={printersLoading} savedSettingsMap={savedSettingsMap}/>} />
         </Routes>
       </Container>
-    </Router>                    
+    </Router>
     </>
   )
 }

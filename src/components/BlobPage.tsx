@@ -1,9 +1,9 @@
 import { Button, Container } from '@mui/material';
-import { PrintSettings } from './ComponentTypes';
+import { SavedSettingsMap } from './ComponentTypes';
 
 interface IBlobPageProps {
     printersLoading: boolean;
-    savedSettings: PrintSettings[];
+    savedSettingsMap: SavedSettingsMap;
 }
 
 const BlobPage = (props: IBlobPageProps) => {

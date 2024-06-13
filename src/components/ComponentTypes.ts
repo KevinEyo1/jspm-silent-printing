@@ -1,4 +1,10 @@
-interface IPDFSettings {
+export enum FileFormat {
+  PDF = 'PDF',
+  EXCEL = 'EXCEL'
+}
+
+export interface IPDFSettings {
+  format: string;
   printRotation?: string;
   printRange?: string;
   printInReverseOrder?: boolean;
@@ -6,7 +12,8 @@ interface IPDFSettings {
   printAsGrayscale?: boolean;
 }
 
-interface IExcelSettings {
+export interface IExcelSettings {
+  format: string;
   pageFrom?: number;
   pageTo?: number;
 }
@@ -23,7 +30,7 @@ export interface IPrinter {
   papers: string[];
 }
 
-export type IFileSettings = IPDFSettings | IExcelSettings | undefined
+export type IFileSettings = IPDFSettings | IExcelSettings
 
 
 export interface PrintSettings {

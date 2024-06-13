@@ -1,10 +1,9 @@
 import * as JSPM from 'jsprintmanager';
 import { useState } from 'react';
-import { IExcelSettings, IPDFSettings, IPrinter, IPrinterSettings, PrintSettings, SavedSettingsMap } from '../components/ComponentTypes';
+import { IPrinter, IPrinterSettings, PrintSettings, SavedSettingsMap, FileFormat, IPDFSettings, IExcelSettings } from './ComponentTypes';
 import { checkFileType } from '../utils/printerUtils';
 import PrintControls from './PrintControls';
 import PrinterSettings from './PrinterSettings';
-import './PrinterSetup.css';
 import { handleSilentPrint } from '../utils/printerUtils';
 
 type PrinterSetupProps = {
@@ -27,9 +26,9 @@ const PrinterSetup = (props: PrinterSetupProps) => {
   } = props;
   const [fileUrl, setFileUrl] = useState<string>("https://neodynamic.com/temp/LoremIpsum.pdf");
   const [fileSelected, setFileSelected] = useState<File | null>(null);
-  const [selectedPDFSettings, setSelectedPDFSettings] = useState<IPDFSettings | undefined>(undefined);
-  const [selectedExcelSettings, setSelectedExcelSettings] = useState<IExcelSettings | undefined>(undefined);
-  const [fileFormatToSave, setFileFormatToSave] = useState<string>('PDF');
+  const [selectedPDFSettings, setSelectedPDFSettings] = useState<IPDFSettings>({ format: FileFormat.PDF});
+  const [selectedExcelSettings, setSelectedExcelSettings] = useState<IExcelSettings>({ format: FileFormat.EXCEL});
+  const [fileFormatToSave, setFileFormatToSave] = useState<string>(FileFormat.PDF);
   const [nameToSave, setNameToSave] = useState<string>('');
  
  
@@ -41,7 +40,7 @@ const PrinterSetup = (props: PrinterSetupProps) => {
     const dataFormat = fileSelected ? fileSelected.type : checkFileType(fileUrl);
     const settingsToUse = settings ? settings : {
       printerSettings: selectedPrinterSettings,
-      fileSettings: fileFormatToSave === 'PDF' ? selectedPDFSettings : selectedExcelSettings,
+      fileSettings: fileFormatToSave === FileFormat.PDF ? selectedPDFSettings : selectedExcelSettings,
     };
 
     handleSilentPrint(data, dataFormat, settingsToUse.printerSettings, settingsToUse.fileSettings);
@@ -51,19 +50,24 @@ const PrinterSetup = (props: PrinterSetupProps) => {
   const handleSaveSettings = () => {
     const newSetting: PrintSettings = {
       printerSettings: selectedPrinterSettings,
-      fileSettings: fileFormatToSave === 'PDF' ? selectedPDFSettings : selectedExcelSettings,
+      fileSettings: fileFormatToSave === FileFormat.PDF ? selectedPDFSettings : selectedExcelSettings,
     };
-    const updatedSettings = { ...savedSettingsMap, [nameToSave]: newSetting};
-    setSavedSettingsMap(updatedSettings);
-    localStorage.setItem('savedSettingsMap', JSON.stringify(updatedSettings));
+    // const updatedSettings = { ...savedSettingsMap, [nameToSave]: newSetting};
+    // setSavedSettingsMap(updatedSettings);
+    setSavedSettingsMap({
+      ...savedSettingsMap,
+      [nameToSave]: newSetting,
+    })
+    localStorage.setItem('savedSettingsMap', JSON.stringify(savedSettingsMap));
   };
 
   const handleUseSavedSetting = (setting: PrintSettings) => {
     handlePrint(setting);
   };
 
-   const handleDeleteSavedSetting = (setting: SavedSetting) => {
-   const updatedSettings = savedSettingsMap.filter((s) => s !== setting);
+  const handleDeleteSavedSetting = (name: string) => {
+    const updatedSettings = { ...savedSettingsMap };
+    delete updatedSettings[name];
     setSavedSettingsMap(updatedSettings);
     localStorage.setItem('savedSettingsMap', JSON.stringify(updatedSettings));
   };
@@ -82,64 +86,55 @@ const PrinterSetup = (props: PrinterSetupProps) => {
             setFileUrl={setFileUrl}
             fileSelected={fileSelected}
             setFileSelected={setFileSelected}
-            selectedPrinter={selectedPrinter}
-            setSelectedPrinter={setSelectedPrinter}
-            selectedTray={selectedTray}
-            setSelectedTray={setSelectedTray}
-            selectedPaper={selectedPaper}
-            setSelectedPaper={setSelectedPaper}
-            printRotation={printRotation}
-            setPrintRotation={setPrintRotation}
+            selectedPrinterSettings={selectedPrinterSettings}
+            setSelectedPrinterSettings={setSelectedPrinterSettings}
+            nameToSave={nameToSave}
+            setNameToSave={setNameToSave}
           />
           <PrintControls
-            printRange={printRange}
-            setPrintRange={setPrintRange}
-            printInReverseOrder={printInReverseOrder}
-            setPrintInReverseOrder={setPrintInReverseOrder}
-            printAnnotations={printAnnotations}
-            setPrintAnnotations={setPrintAnnotations}
-            printAsGrayscale={printAsGrayscale}
-            setPrintAsGrayscale={setPrintAsGrayscale}
+            selectedPDFSettings={selectedPDFSettings}
+            setSelectedPDFSettings={setSelectedPDFSettings}
+            selectedExcelSettings={selectedExcelSettings}
+            setSelectedExcelSettings={setSelectedExcelSettings}
+            fileFormatToSave={fileFormatToSave}
+            setFileFormatToSave={setFileFormatToSave}
           />
           <hr />
           <button type="button" onClick={() => handlePrint(undefined)}>Print Now</button>
           <button type="button" onClick={handleSaveSettings}>Save Settings</button>
           <h2>Saved Settings</h2>
-          {savedSettingsMap.length === 0 && <p>No saved settings</p>}
+          {Object.keys(savedSettingsMap).length === 0 && <p>No saved settings found</p>}
           <div className="grid-container">
           {Object.keys(savedSettingsMap).map((key: string) => {
-            const setting = savedSettingsMap[key];
+            const {printerSettings, fileSettings} = savedSettingsMap[key];
             return (
               <div key={key} className="grid-item">
-                <h3>{`Setting ${key}`}</h3>
-                <p><strong>Printer:</strong> {setting.selectedPrinter}</p>
-                <p><strong>Tray:</strong> {setting.selectedTray}</p>
-                <p><strong>Paper:</strong> {setting.selectedPaper}</p>
-                <p><strong>Print Rotation:</strong> {setting.printRotation}</p>
-                <p><strong>Pages Range:</strong> {setting.printRange}</p>
-                <p><strong>Print In Reverse Order:</strong> {setting.printInReverseOrder ? 'Yes' : 'No'}</p>
-                <p><strong>Print Annotations:</strong> {setting.printAnnotations ? 'Yes' : 'No'}</p>
-                <p><strong>Print As Grayscale:</strong> {setting.printAsGrayscale ? 'Yes' : 'No'}</p>
-                <button type="button" onClick={() => handleUseSavedSetting(key)}>Silent Print</button>
+                <h3>{`Setting for ${key}`}</h3>
+                <p><strong>Printer:</strong> {printerSettings.printerName}</p>
+                <p><strong>Tray:</strong> {printerSettings.trayName}</p>
+                <p><strong>Paper:</strong> {printerSettings.paperName}</p>
+                {'printRotation' in fileSettings && (
+                  <>
+                    <p><strong>PDF Settings</strong></p>
+                    <p><strong>Print Rotation:</strong> {fileSettings.printRotation}</p>
+                    <p><strong>Pages Range:</strong> {fileSettings.printRange}</p>
+                    <p><strong>Print In Reverse Order:</strong> {fileSettings.printInReverseOrder ? 'Yes' : 'No'}</p>
+                    <p><strong>Print Annotations:</strong> {fileSettings.printAnnotations ? 'Yes' : 'No'}</p>
+                    <p><strong>Print As Grayscale:</strong> {fileSettings.printAsGrayscale ? 'Yes' : 'No'}</p>
+                  </>
+                )}
+                {'pageFrom' in fileSettings && (
+                  <>
+                    <p><strong>Excel Settings</strong></p>
+                    <p><strong>Page From:</strong> {fileSettings.pageFrom}</p>
+                    <p><strong>Page To:</strong> {fileSettings.pageTo}</p>
+                  </>
+                )}
+                <button type="button" onClick={() => handleUseSavedSetting(savedSettingsMap[key])}>Silent Print</button>
                 <button type="button" onClick={() => handleDeleteSavedSetting(key)}>Delete</button>
               </div>
             );
           })}
-          </div>
-        </>
-      )}
-    </div>
-  );
-};
-
-export default PrinterSetup;
-ete</button>
-avedSetting(setting)}>Silent Print</button>
-                <button type="button" onClick={() => handleDeleteSavedSetting(setting)}>Delete</button>
-SavedSetting(setting)}>Silent Print</button>
-                <button type="button" onClick={() => handleDeleteSavedSetting(setting)}>Delete</button>
-              </div>
-            ))}
           </div>
         </>
       )}
