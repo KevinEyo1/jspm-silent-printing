@@ -5,6 +5,7 @@ import PrintControls from './PrintControls';
 import { jspmWSStatus, checkFileType, createFile } from '../utils/printerUtils';
 import './PrinterSetup.css';
 import { set } from 'firebase/database';
+import { data } from 'jquery';
 
 interface Printer {
   name: string;
@@ -75,6 +76,13 @@ const PrinterSetup = (props: any) => {
       if (typeof my_file !== 'undefined') {
         console.log(my_file)
         cpj.files.push(my_file);
+        cpj.onUpdated = (data: any) => {
+          console.log(JSON.stringify(data));
+        }
+        cpj.onFinished = (data: any) => {
+          console.log("finished" + JSON.stringify(data));
+        }
+
 
         // Send print job to printer!
         cpj.sendToClient();
