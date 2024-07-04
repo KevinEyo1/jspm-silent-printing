@@ -1,5 +1,6 @@
 import * as JSPM from 'jsprintmanager';
 import {
+  DataSource,
   IExcelSettings,
   IFileSettings,
   IPDFSettings,
@@ -21,6 +22,7 @@ export const jspmWSStatus = () => {
   }
 };
 
+// checks data format of file sourced from fileUrl, to be used in handleSilentPrint function
 export const checkFileType = (fileUrl: string) => {
   const fileExt = fileUrl.split('.').pop()?.toLowerCase();
   switch (fileExt) {
@@ -34,8 +36,9 @@ export const checkFileType = (fileUrl: string) => {
   }
 };
 
+// handles creation of jspm pdf file object depending on data source type
 const createPDFFile = (
-  data: string | Blob,
+  data: DataSource,
   fileSettings: IPDFSettings | undefined,
 ) => {
   const {
@@ -73,8 +76,9 @@ const createPDFFile = (
   return pdfFile;
 };
 
+// handles creation of jspm excel file object depending on data source type
 const createExcelFile = (
-  data: string | Blob,
+  data: DataSource,
   fileSettings: IExcelSettings | undefined,
 ) => {
   const { pageFrom, pageTo } = fileSettings as IExcelSettings;
@@ -101,9 +105,10 @@ const createExcelFile = (
   return xlsFile;
 };
 
+// handles creation of client print job based on given data and printer and file settings, and sends it for printing
 export const handleSilentPrint = (
-  data: string | Blob,
-  dataFormat: string,
+  data: DataSource,
+  dataFormat: string, // PDF or Excel
   printerSettings: IPrinterSettings,
   fileSettings: IFileSettings,
 ) => {

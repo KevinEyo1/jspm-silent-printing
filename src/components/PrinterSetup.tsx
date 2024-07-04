@@ -1,10 +1,19 @@
-import * as JSPM from 'jsprintmanager';
 import { useState } from 'react';
-import { IPrinter, IPrinterSettings, PrintSettings, SavedSettingsMap, FileFormat, IPDFSettings, IExcelSettings } from './ComponentTypes';
+import {
+  IPrinter,
+  IPrinterSettings,
+  PrintSettings,
+  SavedSettingsMap,
+  FileFormat,
+  IPDFSettings,
+  IExcelSettings,
+  DataSource,
+} from './ComponentTypes';
 import { checkFileType } from '../utils/printerUtils';
 import PrintControls from './PrintControls';
 import PrinterSettings from './PrinterSettings';
 import { handleSilentPrint } from '../utils/printerUtils';
+import DataSelector from './DataSelector';
 
 type PrinterSetupProps = {
   clientPrinters: IPrinter[];
@@ -24,40 +33,68 @@ const PrinterSetup = (props: PrinterSetupProps) => {
     savedSettingsMap,
     setSavedSettingsMap,
   } = props;
-  const [fileUrl, setFileUrl] = useState<string>("https://neodynamic.com/temp/LoremIpsum.pdf");
+  const [fileUrl, setFileUrl] = useState<string>(
+    'https://neodynamic.com/temp/LoremIpsum.pdf',
+  );
   const [fileSelected, setFileSelected] = useState<File | null>(null);
-  const [selectedPDFSettings, setSelectedPDFSettings] = useState<IPDFSettings>({ format: FileFormat.PDF});
-  const [selectedExcelSettings, setSelectedExcelSettings] = useState<IExcelSettings>({ format: FileFormat.EXCEL});
-  const [fileFormatToSave, setFileFormatToSave] = useState<string>(FileFormat.PDF);
+  const [selectedPDFSettings, setSelectedPDFSettings] = useState<IPDFSettings>({
+    format: FileFormat.PDF,
+  });
+  const [selectedExcelSettings, setSelectedExcelSettings] =
+    useState<IExcelSettings>({ format: FileFormat.EXCEL });
+  const [fileFormatToSave, setFileFormatToSave] = useState<string>(
+    FileFormat.PDF,
+  );
   const [nameToSave, setNameToSave] = useState<string>('');
- 
- 
-  const handlePrint = (settings: undefined | PrintSettings) => {
-    //test
-    const proxyUrl = `http://localhost:3001/fetch-pdf?url=${encodeURIComponent(fileUrl)}`;
-    
-    const data = fileSelected ? fileSelected : proxyUrl;
-    const dataFormat = fileSelected ? fileSelected.type : checkFileType(fileUrl);
-    const settingsToUse = settings ? settings : {
-      printerSettings: selectedPrinterSettings,
-      fileSettings: fileFormatToSave === FileFormat.PDF ? selectedPDFSettings : selectedExcelSettings,
-    };
+  const [dataSource, setDataSource] = useState<DataSource | null>(null);
 
-    handleSilentPrint(data, dataFormat, settingsToUse.printerSettings, settingsToUse.fileSettings);
-  }
+  const handlePrint = (settings: undefined | PrintSettings) => { 
+    let data: DataSource | null = null;
+    let dataFormat: string = '';
 
+    if (dataSource === null) {
+      alert('No data to print');
+      return;
+    } else if (typeof dataSource === 'string') {
+      data = `http://localhost:3001/fetch-pdf?url=${encodeURIComponent(dataSource)}`;
+      dataFormat = checkFileType(dataSource);
+    } else if (dataSource instanceof Blob) {
+      data = dataSource;
+      dataFormat = dataSource.type;
+    }
+
+    const settingsToUse = settings
+      ? settings
+      : {
+          printerSettings: selectedPrinterSettings,
+          fileSettings:
+            fileFormatToSave === FileFormat.PDF
+              ? selectedPDFSettings
+              : selectedExcelSettings,
+        };
+
+    handleSilentPrint(
+      data as DataSource,
+      dataFormat,
+      settingsToUse.printerSettings,
+      settingsToUse.fileSettings,
+    );
+  };
 
   const handleSaveSettings = () => {
     const newSetting: PrintSettings = {
       printerSettings: selectedPrinterSettings,
-      fileSettings: fileFormatToSave === FileFormat.PDF ? selectedPDFSettings : selectedExcelSettings,
+      fileSettings:
+        fileFormatToSave === FileFormat.PDF
+          ? selectedPDFSettings
+          : selectedExcelSettings,
     };
     // const updatedSettings = { ...savedSettingsMap, [nameToSave]: newSetting};
     // setSavedSettingsMap(updatedSettings);
     setSavedSettingsMap({
       ...savedSettingsMap,
       [nameToSave]: newSetting,
-    })
+    });
     localStorage.setItem('savedSettingsMap', JSON.stringify(savedSettingsMap));
   };
 
@@ -77,9 +114,12 @@ const PrinterSetup = (props: PrinterSetupProps) => {
       <h1>Advanced PDF Printing from Javascript</h1>
       <hr />
       {printersLoading && <p>Loading installed printers...</p>}
-      {!printersLoading && clientPrinters.length === 0 && <p>No printers found!</p>}
+      {!printersLoading && clientPrinters.length === 0 && (
+        <p>No printers found!</p>
+      )}
       {!printersLoading && clientPrinters.length !== 0 && (
         <>
+          <DataSelector setDataSource={setDataSource}/>
           <PrinterSettings
             clientPrinters={clientPrinters}
             fileUrl={fileUrl}
@@ -100,41 +140,85 @@ const PrinterSetup = (props: PrinterSetupProps) => {
             setFileFormatToSave={setFileFormatToSave}
           />
           <hr />
-          <button type="button" onClick={() => handlePrint(undefined)}>Print Now</button>
-          <button type="button" onClick={handleSaveSettings}>Save Settings</button>
+          <button type="button" onClick={() => handlePrint(undefined)}>
+            Print Now
+          </button>
+          <button type="button" onClick={handleSaveSettings}>
+            Save Settings
+          </button>
           <h2>Saved Settings</h2>
-          {Object.keys(savedSettingsMap).length === 0 && <p>No saved settings found</p>}
+          {Object.keys(savedSettingsMap).length === 0 && (
+            <p>No saved settings found</p>
+          )}
           <div className="grid-container">
-          {Object.keys(savedSettingsMap).map((key: string) => {
-            const {printerSettings, fileSettings} = savedSettingsMap[key];
-            return (
-              <div key={key} className="grid-item">
-                <h3>{`Setting for ${key}`}</h3>
-                <p><strong>Printer:</strong> {printerSettings.printerName}</p>
-                <p><strong>Tray:</strong> {printerSettings.trayName}</p>
-                <p><strong>Paper:</strong> {printerSettings.paperName}</p>
-                {'printRotation' in fileSettings && (
-                  <>
-                    <p><strong>PDF Settings</strong></p>
-                    <p><strong>Print Rotation:</strong> {fileSettings.printRotation}</p>
-                    <p><strong>Pages Range:</strong> {fileSettings.printRange}</p>
-                    <p><strong>Print In Reverse Order:</strong> {fileSettings.printInReverseOrder ? 'Yes' : 'No'}</p>
-                    <p><strong>Print Annotations:</strong> {fileSettings.printAnnotations ? 'Yes' : 'No'}</p>
-                    <p><strong>Print As Grayscale:</strong> {fileSettings.printAsGrayscale ? 'Yes' : 'No'}</p>
-                  </>
-                )}
-                {'pageFrom' in fileSettings && (
-                  <>
-                    <p><strong>Excel Settings</strong></p>
-                    <p><strong>Page From:</strong> {fileSettings.pageFrom}</p>
-                    <p><strong>Page To:</strong> {fileSettings.pageTo}</p>
-                  </>
-                )}
-                <button type="button" onClick={() => handleUseSavedSetting(savedSettingsMap[key])}>Silent Print</button>
-                <button type="button" onClick={() => handleDeleteSavedSetting(key)}>Delete</button>
-              </div>
-            );
-          })}
+            {Object.keys(savedSettingsMap).map((key: string) => {
+              const { printerSettings, fileSettings } = savedSettingsMap[key];
+              return (
+                <div key={key} className="grid-item">
+                  <h3>{`Setting for ${key}`}</h3>
+                  <p>
+                    <strong>Printer:</strong> {printerSettings.printerName}
+                  </p>
+                  <p>
+                    <strong>Tray:</strong> {printerSettings.trayName}
+                  </p>
+                  <p>
+                    <strong>Paper:</strong> {printerSettings.paperName}
+                  </p>
+                  {'printRotation' in fileSettings && (
+                    <>
+                      <p>
+                        <strong>PDF Settings</strong>
+                      </p>
+                      <p>
+                        <strong>Print Rotation:</strong>{' '}
+                        {fileSettings.printRotation}
+                      </p>
+                      <p>
+                        <strong>Pages Range:</strong> {fileSettings.printRange}
+                      </p>
+                      <p>
+                        <strong>Print In Reverse Order:</strong>{' '}
+                        {fileSettings.printInReverseOrder ? 'Yes' : 'No'}
+                      </p>
+                      <p>
+                        <strong>Print Annotations:</strong>{' '}
+                        {fileSettings.printAnnotations ? 'Yes' : 'No'}
+                      </p>
+                      <p>
+                        <strong>Print As Grayscale:</strong>{' '}
+                        {fileSettings.printAsGrayscale ? 'Yes' : 'No'}
+                      </p>
+                    </>
+                  )}
+                  {'pageFrom' in fileSettings && (
+                    <>
+                      <p>
+                        <strong>Excel Settings</strong>
+                      </p>
+                      <p>
+                        <strong>Page From:</strong> {fileSettings.pageFrom}
+                      </p>
+                      <p>
+                        <strong>Page To:</strong> {fileSettings.pageTo}
+                      </p>
+                    </>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleUseSavedSetting(savedSettingsMap[key])}
+                  >
+                    Silent Print
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteSavedSetting(key)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </>
       )}

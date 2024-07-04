@@ -1,5 +1,13 @@
 import React from 'react';
-import { AppBar, Tabs, Tab, TextField, Box, FormControlLabel, Checkbox } from '@mui/material';
+import {
+  AppBar,
+  Tabs,
+  Tab,
+  TextField,
+  Box,
+  FormControlLabel,
+  Checkbox,
+} from '@mui/material';
 import { FileFormat, IExcelSettings, IPDFSettings } from './ComponentTypes';
 
 interface PrintControlsProps {
@@ -18,9 +26,7 @@ const PrintControls: React.FC<PrintControlsProps> = ({
   setSelectedExcelSettings,
   fileFormatToSave,
   setFileFormatToSave,
-
 }) => {
-  
   const [tabValue, setTabValue] = React.useState(0);
 
   const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {

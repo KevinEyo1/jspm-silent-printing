@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Box, CircularProgress, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
+import {
+  Box,
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { IPrinter, IPrinterSettings } from './ComponentTypes';
 
 interface PrinterSettingsProps {
@@ -34,11 +44,15 @@ const PrinterSettings: React.FC<PrinterSettingsProps> = ({
     if (selectedPrinterObj) {
       setSelectedPrinterSettings({
         ...selectedPrinterSettings,
-        trayName: selectedPrinterObj.trays.length > 0 
-        ? selectedPrinterObj.trays[0] : '',
-        paperName: selectedPrinterObj.papers.length > 0
-        ? selectedPrinterObj.papers[0] : '',
-      })
+        trayName:
+          selectedPrinterObj.trays.length > 0
+            ? selectedPrinterObj.trays[0]
+            : '',
+        paperName:
+          selectedPrinterObj.papers.length > 0
+            ? selectedPrinterObj.papers[0]
+            : '',
+      });
       setLoading(false);
     } else {
       alert("Can't find printer");
@@ -57,11 +71,11 @@ const PrinterSettings: React.FC<PrinterSettingsProps> = ({
       ...selectedPrinterSettings,
       [name]: e.target.value as string,
     });
-  }
+  };
 
   return (
     <Box>
-      <Typography variant="h6">Selected file takes precedence over file URL</Typography>
+      {/* <Typography variant="h6">Selected file takes precedence over file URL</Typography>
       <Box mb={2}>
         <input
           type="file"
@@ -76,7 +90,7 @@ const PrinterSettings: React.FC<PrinterSettingsProps> = ({
           onChange={(e) => setFileUrl(e.target.value)}
           fullWidth
         />
-      </Box>
+      </Box> */}
       <Box mb={2}>
         <TextField
           label="Settings Name"
@@ -115,7 +129,10 @@ const PrinterSettings: React.FC<PrinterSettingsProps> = ({
               onChange={handleChange}
             >
               {clientPrinters
-                .find((printer) => printer.name === selectedPrinterSettings.printerName)
+                .find(
+                  (printer) =>
+                    printer.name === selectedPrinterSettings.printerName,
+                )
                 ?.trays.map((tray, index) => (
                   <MenuItem key={index} value={tray}>
                     {tray}
@@ -138,7 +155,10 @@ const PrinterSettings: React.FC<PrinterSettingsProps> = ({
               onChange={handleChange}
             >
               {clientPrinters
-                .find((printer) => printer.name === selectedPrinterSettings.printerName)
+                .find(
+                  (printer) =>
+                    printer.name === selectedPrinterSettings.printerName,
+                )
                 ?.papers.map((paper, index) => (
                   <MenuItem key={index} value={paper}>
                     {paper}

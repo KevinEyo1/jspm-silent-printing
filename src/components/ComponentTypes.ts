@@ -1,6 +1,6 @@
 export enum FileFormat {
   PDF = 'PDF',
-  EXCEL = 'EXCEL'
+  EXCEL = 'EXCEL',
 }
 
 export interface IPDFSettings {
@@ -30,8 +30,7 @@ export interface IPrinter {
   papers: string[];
 }
 
-export type IFileSettings = IPDFSettings | IExcelSettings
-
+export type IFileSettings = IPDFSettings | IExcelSettings;
 
 export interface PrintSettings {
   printerSettings: IPrinterSettings;
@@ -41,3 +40,7 @@ export interface PrintSettings {
 export interface SavedSettingsMap {
   [key: string]: PrintSettings;
 }
+
+export type FileUrl = string;
+
+export type DataSource = FileUrl | Blob;
